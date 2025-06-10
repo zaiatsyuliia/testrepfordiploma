@@ -42,7 +42,7 @@ def cleanup_file(path):
 
 @app.route('/')
 def index():
-    return render_template('create_model.html')
+    return render_template('index.html')
 
 @app.route('/health', methods=['GET'])
 def health_check():
