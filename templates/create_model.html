@@ -5,102 +5,160 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D Модель з Зображення</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-    <h1>3D Модель з Зображення</h1>
-    
-    <div id="serverStatus">Перевірка сервера...</div>
-    
-    <div>
-        <h2>Завантажити зображення</h2>
-        <input type="file" id="fileInput" accept="image/*">
-        <button onclick="uploadImage()">Завантажити</button>
+    <div class="header">
+        <h1>3D Модель з Зображення</h1>
+        <div id="serverStatus">Перевірка сервера...</div>
     </div>
     
-    <div id="controls" class="hidden">
-        <h2>Налаштування</h2>
-        <div class="controls">
-            <label>Товщина: <input type="range" id="thickness" min="0.5" max="50" value="2" step="0.1" oninput="this.nextElementSibling.textContent=this.value"> <span>2</span></label>
-            <label>Модель: 
-                <select id="model">
-                    <option value="DPT_Large">DPT Large</option>
-                    <option value="DPT_Hybrid">DPT Hybrid</option>
-                    <option value="MiDaS_small">MiDaS Small</option>
-                </select>
-            </label>
+    <div class="container">
+        <div class="section">
+            <h2>Завантажити зображення</h2>
+            <input type="file" id="fileInput" accept="image/*">
+            <button onclick="uploadImage()">Завантажити</button>
         </div>
-        <button onclick="generateModel()">3D-модель</button>
-        <button onclick="processDepth()">Карта глибин</button>
-    </div>
-    
-    <div id="results" class="hidden">
-        <h2>Результати</h2>
-        <div><h3>Оригінал</h3><img id="original" style="max-width: 400px;"></div>
-        <div id="depthResult" class="hidden"><h3>Карта глибини</h3><img id="depth" style="max-width: 400px;"></div>
-        <div id="viewer" class="hidden">
-            <h3>3D Модель</h3>
-            <canvas id="canvas3d" width="1000" height="600"></canvas>
-            <div id="loading" class="hidden">Генерація...</div>
+        
+        <div id="controls" class="section hidden">
+            <h2>Налаштування</h2>
+            <div class="controls">
+                <label>Товщина: 
+                    <input type="range" id="thickness" min="0.5" max="50" value="2" step="0.1" 
+                           oninput="this.nextElementSibling.textContent=this.value"> 
+                    <span>2</span>
+                </label>
+                <label>Модель: 
+                    <select id="model">
+                        <option value="DPT_Large">DPT Large</option>
+                        <option value="DPT_Hybrid">DPT Hybrid</option>
+                        <option value="MiDaS_small">MiDaS Small</option>
+                    </select>
+                </label>
+            </div>
+            <button onclick="generateModel()">Створити 3D-модель</button>
+            <button onclick="processDepth()">Тільки карта глибин</button>
         </div>
-        <br>
-        <div id="download" class="hidden"><button onclick="downloadOBJ()">Завантажити OBJ</button></div>
+        
+        <div id="results" class="section hidden">
+            <h2>Результати</h2>
+            <div>
+                <h3>Оригінальне зображення</h3>
+                <img id="original" style="max-width: 400px;">
+            </div>
+            <div id="depthResult" class="hidden">
+                <h3>Карта глибини</h3>
+                <img id="depth" style="max-width: 400px;">
+            </div>
+            <div id="viewer" class="hidden">
+                <h3>3D Модель</h3>
+                <div id="loading" class="hidden">Генерація 3D моделі...</div>
+                <canvas id="canvas3d" width="800" height="600"></canvas>
+                <div class="viewer-controls">
+                    <button onclick="toggleAutoRotate()">Автообертання</button>
+                    <button onclick="resetCamera()">Скинути вид</button>
+                </div>
+                <div class="viewer-hint">
+                    Використовуйте миша для обертання, колесо для масштабування, праву кнопку для переміщення
+                </div>
+            </div>
+            <div id="download" class="hidden">
+                <button onclick="downloadOBJ()">Завантажити OBJ файл</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        const API = '';
+        // Конфігурація API
+        const API_BASE = window.location.origin;
+        
+        // 3D змінні
         let scene, camera, renderer, mesh, imageFile, modelData;
         let autoRotate = false, mouseDown = false, rightClick = false;
         let mouseX = 0, mouseY = 0, rotX = 0, rotY = 0, targetRotX = 0, targetRotY = 0;
         let camDist = 30, targetCamDist = 30;
 
+        // Ініціалізація при завантаженні сторінки
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('Ініціалізація додатку...');
             checkServer();
             initScene();
         });
 
+        // Перевірка статусу сервера
         async function checkServer() {
-            const s = document.getElementById('serverStatus');
+            const statusElement = document.getElementById('serverStatus');
             try {
-                await fetch(`${API}/health`);
-                s.textContent = 'Сервер онлайн';
-                s.style.color = 'green';
-            } catch {
-                s.textContent = 'Сервер офлайн';
-                s.style.color = 'red';
+                console.log('Перевірка сервера...');
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                
+                statusElement.textContent = `Сервер: ${data.status}`;
+                statusElement.className = 'success';
+                console.log('Сервер доступний:', data);
+            } catch (error) {
+                console.error('Сервер недоступний:', error);
+                statusElement.textContent = 'Сервер офлайн';
+                statusElement.className = 'error';
             }
         }
 
+        // Ініціалізація 3D сцени
         function initScene() {
-            const canvas = document.getElementById('canvas3d');
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x222222);
-            camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
-            camera.position.set(0, 0, 30);
-            renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-            renderer.setSize(canvas.width, canvas.height);
-            
-            scene.add(new THREE.AmbientLight(0x404040, 0.4));
-            const light = new THREE.DirectionalLight(0xffffff, 0.8);
-            light.position.set(10, 10, 5);
-            scene.add(light, new THREE.PointLight(0xffffff, 0.5, 0, 2));
-            
-            const grid = new THREE.GridHelper(20, 20);
-            grid.position.y = -10;
-            scene.add(grid);
-            
-            // Controls
-            canvas.onmousedown = (e) => {
+            try {
+                const canvas = document.getElementById('canvas3d');
+                if (!canvas) {
+                    console.error('Canvas не знайдено');
+                    return;
+                }
+
+                scene = new THREE.Scene();
+                scene.background = new THREE.Color(0x222222);
+                
+                camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
+                camera.position.set(0, 0, 30);
+                
+                renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+                renderer.setSize(canvas.width, canvas.height);
+                
+                // Освітлення
+                scene.add(new THREE.AmbientLight(0x404040, 0.4));
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                directionalLight.position.set(10, 10, 5);
+                scene.add(directionalLight);
+                
+                const pointLight = new THREE.PointLight(0xffffff, 0.5, 0, 2);
+                scene.add(pointLight);
+                
+                // Сітка
+                const grid = new THREE.GridHelper(20, 20);
+                grid.position.y = -10;
+                scene.add(grid);
+                
+                setupControls(canvas);
+                animate();
+                
+                console.log('3D сцена ініціалізована');
+            } catch (error) {
+                console.error('Помилка ініціалізації 3D сцени:', error);
+            }
+        }
+
+        // Налаштування управління
+        function setupControls(canvas) {
+            canvas.addEventListener('mousedown', (e) => {
                 mouseDown = true;
                 rightClick = e.button === 2;
                 mouseX = e.clientX;
                 mouseY = e.clientY;
                 canvas.style.cursor = 'grabbing';
-            };
+            });
             
-            canvas.onmousemove = (e) => {
+            canvas.addEventListener('mousemove', (e) => {
                 if (!mouseDown) return;
-                const dx = e.clientX - mouseX, dy = e.clientY - mouseY;
+                
+                const dx = e.clientX - mouseX;
+                const dy = e.clientY - mouseY;
                 
                 if (rightClick) {
                     camera.position.x -= dx * 0.05;
@@ -110,21 +168,26 @@
                     targetRotX += dy * 0.005;
                     targetRotX = Math.max(-Math.PI/2, Math.min(Math.PI/2, targetRotX));
                 }
+                
                 mouseX = e.clientX;
                 mouseY = e.clientY;
-            };
+            });
             
-            canvas.onmouseup = () => { mouseDown = false; canvas.style.cursor = 'grab'; };
-            canvas.onwheel = (e) => {
+            canvas.addEventListener('mouseup', () => {
+                mouseDown = false;
+                canvas.style.cursor = 'grab';
+            });
+            
+            canvas.addEventListener('wheel', (e) => {
                 e.preventDefault();
                 targetCamDist += e.deltaY * 0.1;
                 targetCamDist = Math.max(5, Math.min(100, targetCamDist));
-            };
-            canvas.oncontextmenu = (e) => e.preventDefault();
+            });
             
-            animate();
+            canvas.addEventListener('contextmenu', (e) => e.preventDefault());
         }
 
+        // Анімаційний цикл
         function animate() {
             requestAnimationFrame(animate);
             
@@ -140,152 +203,275 @@
             renderer.render(scene, camera);
         }
 
-        document.getElementById('fileInput').onchange = (e) => {
+        // Обробка вибору файлу
+        document.getElementById('fileInput').addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file && file.type.startsWith('image/')) {
                 imageFile = file;
+                console.log('Файл вибрано:', file.name);
             } else {
+                alert('Будь ласка, виберіть файл зображення');
+                e.target.value = '';
             }
-        };
+        });
 
+        // Завантаження зображення
         function uploadImage() {
-            if (!imageFile) return null;
+            if (!imageFile) {
+                alert('Спочатку виберіть файл');
+                return;
+            }
             
             const reader = new FileReader();
             reader.onload = (e) => {
                 document.getElementById('original').src = e.target.result;
                 show('controls', 'results');
+                console.log('Зображення завантажено');
             };
             reader.readAsDataURL(imageFile);
         }
 
+        // Обробка тільки карти глибини
         async function processDepth() {
-            if (!imageFile) return null;
+            if (!imageFile) {
+                alert('Спочатку завантажте зображення');
+                return;
+            }
             
             const btn = event.target;
+            const originalText = btn.textContent;
             btn.disabled = true;
             btn.textContent = 'Обробка...';
             
             try {
+                console.log('Початок обробки карти глибини...');
+                
                 const formData = new FormData();
                 formData.append('image', imageFile);
                 formData.append('model_type', document.getElementById('model').value);
                 
-                const res = await fetch(`${API}/process_image`, { method: 'POST', body: formData });
-                const data = await res.json();
+                const response = await fetch(`${API_BASE}/process_image`, {
+                    method: 'POST',
+                    body: formData
+                });
                 
-                if (data.error) throw new Error(data.error);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
                 
                 document.getElementById('depth').src = 'data:image/png;base64,' + data.depth_map;
                 show('depthResult');
                 
-            } catch (err) {
+                console.log('Карта глибини готова');
+                
+            } catch (error) {
+                console.error('Помилка обробки:', error);
+                alert('Помилка обробки: ' + error.message);
             } finally {
                 btn.disabled = false;
-                btn.textContent = 'Тільки глибина';
+                btn.textContent = originalText;
             }
         }
 
+        // Генерація 3D моделі
         async function generateModel() {
-            if (!imageFile) return null;
+            if (!imageFile) {
+                alert('Спочатку завантажте зображення');
+                return;
+            }
             
             const btn = event.target;
+            const originalText = btn.textContent;
             btn.disabled = true;
             btn.textContent = 'Генерація...';
-            show('loading');
             
+            show('loading');
             const startTime = Date.now();
             
             try {
+                console.log('Початок генерації 3D моделі...');
+                
                 const formData = new FormData();
                 formData.append('image', imageFile);
                 formData.append('base_thickness', document.getElementById('thickness').value);
                 formData.append('model_type', document.getElementById('model').value);
                 
-                const res = await fetch(`${API}/generate_3d`, { method: 'POST', body: formData });
-                const data = await res.json();
+                const response = await fetch(`${API_BASE}/generate_3d`, {
+                    method: 'POST',
+                    body: formData
+                });
                 
-                if (data.error) throw new Error(data.error);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                const elapsedTime = ((Date.now() - startTime) / 1000).toFixed(1);
+                console.log(`3D модель створена за ${elapsedTime} секунд`);
+                console.log(`Вершини: ${data.vertices_count}, Грані: ${data.faces_count}`);
                 
                 create3D(data);
                 modelData = data;
                 
                 show('viewer', 'download');
                 
-            } catch (err) {
+            } catch (error) {
+                console.error('Помилка генерації:', error);
+                alert('Помилка генерації: ' + error.message);
             } finally {
                 btn.disabled = false;
-                btn.textContent = 'Генерувати 3D';
+                btn.textContent = originalText;
                 hide('loading');
             }
         }
 
+        // Створення 3D об'єкта
         function create3D(data) {
-            const { vertices, faces } = data;
-            
-            if (mesh) {
-                scene.remove(mesh);
-                mesh.geometry.dispose();
-                mesh.material.dispose();
+            try {
+                const { vertices, faces } = data;
+                
+                if (mesh) {
+                    scene.remove(mesh);
+                    if (mesh.geometry) mesh.geometry.dispose();
+                    if (mesh.material) mesh.material.dispose();
+                }
+                
+                const geometry = new THREE.BufferGeometry();
+                
+                // Вершини
+                const verts = new Float32Array(vertices.length * 3);
+                vertices.forEach((v, i) => {
+                    verts[i * 3] = v[0];
+                    verts[i * 3 + 1] = v[1];
+                    verts[i * 3 + 2] = v[2];
+                });
+                geometry.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+                
+                // Грані
+                const faceIndices = new Uint32Array(faces.length * 3);
+                faces.forEach((f, i) => {
+                    faceIndices[i * 3] = f[0];
+                    faceIndices[i * 3 + 1] = f[1];
+                    faceIndices[i * 3 + 2] = f[2];
+                });
+                geometry.setIndex(new THREE.BufferAttribute(faceIndices, 1));
+                geometry.computeVertexNormals();
+                
+                // Матеріал та меш
+                const material = new THREE.MeshPhongMaterial({
+                    color: 0x4488ff,
+                    side: THREE.DoubleSide,
+                    shininess: 100
+                });
+                
+                mesh = new THREE.Mesh(geometry, material);
+                
+                // Центрування та масштабування
+                const box = new THREE.Box3().setFromObject(mesh);
+                const center = box.getCenter(new THREE.Vector3());
+                const size = box.getSize(new THREE.Vector3());
+                
+                mesh.position.sub(center);
+                const scale = 20 / Math.max(size.x, size.y, size.z);
+                mesh.scale.setScalar(scale);
+                
+                scene.add(mesh);
+                resetCamera();
+                
+                console.log('3D об\'єкт створено');
+            } catch (error) {
+                console.error('Помилка створення 3D об\'єкта:', error);
             }
-            
-            const geometry = new THREE.BufferGeometry();
-            
-            const verts = new Float32Array(vertices.length * 3);
-            vertices.forEach((v, i) => {
-                verts[i * 3] = v[0];
-                verts[i * 3 + 1] = v[1];
-                verts[i * 3 + 2] = v[2];
-            });
-            geometry.setAttribute('position', new THREE.BufferAttribute(verts, 3));
-            
-            const faceIndices = new Uint32Array(faces.length * 3);
-            faces.forEach((f, i) => {
-                faceIndices[i * 3] = f[0];
-                faceIndices[i * 3 + 1] = f[1];
-                faceIndices[i * 3 + 2] = f[2];
-            });
-            geometry.setIndex(new THREE.BufferAttribute(faceIndices, 1));
-            geometry.computeVertexNormals();
-            
-            mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ color: 0x4488ff, side: THREE.DoubleSide }));
-            
-            const box = new THREE.Box3().setFromObject(mesh);
-            const center = box.getCenter(new THREE.Vector3());
-            const size = box.getSize(new THREE.Vector3());
-            
-            mesh.position.sub(center);
-            const scale = 20 / Math.max(size.x, size.y, size.z);
-            mesh.scale.setScalar(scale);
-            
-            scene.add(mesh);
-            camera.position.set(0, 10, 30);
         }
 
+        // Завантаження OBJ файлу
         async function downloadOBJ() {
-            if (!modelData) return null;
+            if (!modelData) {
+                alert('Спочатку створіть 3D модель');
+                return;
+            }
             
             try {
-                const res = await fetch(`${API}/download_model`, {
+                console.log('Завантаження OBJ файлу...');
+                
+                const response = await fetch(`${API_BASE}/download_model`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(modelData)
                 });
                 
-                const blob = await res.blob();
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const blob = await response.blob();
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
                 a.download = 'model_3d.obj';
+                document.body.appendChild(a);
                 a.click();
+                document.body.removeChild(a);
                 URL.revokeObjectURL(url);
                 
-            } catch (err) {
+                console.log('OBJ файл завантажено');
+                
+            } catch (error) {
+                console.error('Помилка завантаження:', error);
+                alert('Помилка завантаження: ' + error.message);
             }
         }
 
-        function show(...ids) { ids.forEach(id => document.getElementById(id).classList.remove('hidden')); }
-        function hide(...ids) { ids.forEach(id => document.getElementById(id).classList.add('hidden')); }
+        // Управління 3D видом
+        function toggleAutoRotate() {
+            autoRotate = !autoRotate;
+            const btn = event.target;
+            btn.textContent = autoRotate ? 'Зупинити обертання' : 'Автообертання';
+        }
+
+        function resetCamera() {
+            if (camera) {
+                camera.position.set(0, 10, 30);
+                targetRotX = 0;
+                targetRotY = 0;
+                targetCamDist = 30;
+            }
+        }
+
+        // Допоміжні функції
+        function show(...ids) {
+            ids.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) element.classList.remove('hidden');
+            });
+        }
+
+        function hide(...ids) {
+            ids.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) element.classList.add('hidden');
+            });
+        }
+
+        // Обробка помилок
+        window.addEventListener('error', (e) => {
+            console.error('JavaScript помилка:', e.error);
+        });
+
+        window.addEventListener('unhandledrejection', (e) => {
+            console.error('Необроблена помилка Promise:', e.reason);
+        });
     </script>
 </body>
 </html>
