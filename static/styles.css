@@ -6,169 +6,213 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    color: #2c3e50;
+    line-height: 1.6;
+}
+
+.header {
+    position: relative;
     padding: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    border-bottom: 1px solid rgba(52, 152, 219, 0.2);
+}
+
+.header h1 {
+    text-align: center;
+    color: #2980b9;
+    font-weight: 300;
+    font-size: 2.2em;
+}
+
+#serverStatus {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.9em;
+    font-weight: 500;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(52, 152, 219, 0.2);
 }
 
 .container {
-    max-width: 500px;
-    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
 }
 
-h1 {
-    text-align: center;
-    color: white;
-    margin-bottom: 30px;
-    font-size: 2.5em;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-.calculator {
-    background: white;
-    padding: 40px;
-    border-radius: 20px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-    backdrop-filter: blur(10px);
-}
-
-.input-group {
-    margin-bottom: 25px;
-}
-
-label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #333;
-    font-size: 1.1em;
-}
-
-input, select {
-    width: 100%;
-    padding: 15px;
-    border: 2px solid #e1e5e9;
+.section {
+    background: rgba(255, 255, 255, 0.8);
+    margin: 20px 0;
+    padding: 25px;
     border-radius: 10px;
-    font-size: 1.1em;
-    transition: all 0.3s ease;
-    background: #f8f9fa;
+    border: 1px solid rgba(52, 152, 219, 0.2);
 }
 
-input:focus, select:focus {
-    outline: none;
-    border-color: #667eea;
-    background: white;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
-}
-
-select {
-    cursor: pointer;
+.section h2 {
+    color: #3498db;
+    margin-bottom: 15px;
+    font-weight: 400;
+    font-size: 1.4em;
 }
 
 button {
-    width: 100%;
-    padding: 18px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #3498db;
     color: white;
     border: none;
-    border-radius: 10px;
-    font-size: 1.2em;
-    font-weight: 600;
+    padding: 12px 24px;
+    border-radius: 8px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 10px;
+    font-size: 0.95em;
+    font-weight: 500;
+    margin: 5px;
 }
 
 button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    background: #2980b9;
 }
 
-button:active {
-    transform: translateY(-1px);
+button:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
 }
 
-.result {
-    margin-top: 25px;
-    min-height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+input[type="file"] {
+    padding: 10px;
+}
+
+input[type="range"] {
+    width: 150px;
+    margin: 0 10px;
+}
+
+select {
+    padding: 8px 12px;
+    border: 1px solid #3498db;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.8);
+    color: #2c3e50;
+}
+
+label {
+    display: inline-block;
+    margin: 10px 15px 10px 0;
+    color: #34495e;
+    font-weight: 500;
+}
+
+img {
+    max-width: 400px;
+    border-radius: 8px;
+    margin: 10px;
+}
+
+#canvas3d {
+    position: relative;
+    border: 2px solid #3498db;
+    border-radius: 8px;
+    cursor: grab;
+}
+
+#canvas3d:active {
+    cursor: grabbing;
 }
 
 .success {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    color: white;
-    padding: 20px;
-    border-radius: 10px;
-    text-align: center;
-    font-size: 1.1em;
-    box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
-    animation: slideIn 0.5s ease;
+    background: rgba(46, 204, 113, 0.1);
+    color: #27ae60;
+    border-left: 4px solid #2ecc71;
 }
 
 .error {
-    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-    color: white;
+    background: rgba(231, 76, 60, 0.1);
+    color: #c0392b;
+    border-left: 4px solid #e74c3c;
+}
+
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.viewer-controls {
+    margin: 15px 0;
+    text-align: center;
+}
+
+.viewer-hint {
+    font-size: 0.85em;
+    color: #7f8c8d;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.hidden {
+    display: none;
+}
+
+@media (max-width: 767px) {
+    .header h1 {
+        font-size: 1.8em;
+        margin-bottom: 10px;
+    }
+    
+    #serverStatus {
+        position: static;
+        text-align: center;
+        margin-top: 10px;
+    }
+    
+    .container {
+        padding: 10px;
+    }
+    
+    .section {
+        padding: 15px;
+    }
+    
+    img, #canvas3d {
+        max-width: 100%;
+    }
+    
+    .controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    label {
+        display: block;
+        margin: 10px 0;
+    }
+}
+
+#loading {
+    text-align: center;
+    color: #3498db;
+    font-weight: 500;
     padding: 20px;
-    border-radius: 10px;
-    text-align: center;
-    font-size: 1.1em;
-    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
-    animation: shake 0.5s ease;
 }
 
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
+#loading::after {
+    content: '';
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #3498db;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+    margin-left: 10px;
+}
+
+@keyframes spin {
     to {
-        opacity: 1;
-        transform: translateY(0);
+        transform: rotate(360deg);
     }
-}
-
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    75% { transform: translateX(5px); }
-}
-
-.footer {
-    text-align: center;
-    margin-top: 30px;
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 0.9em;
-}
-
-/* Мобільна адаптивність */
-@media (max-width: 480px) {
-    h1 {
-        font-size: 2em;
-    }
-    
-    .calculator {
-        padding: 25px;
-    }
-    
-    input, select, button {
-        padding: 12px;
-        font-size: 1em;
-    }
-}
-
-/* Hover ефекти для input полів */
-input:hover, select:hover {
-    border-color: #b8c6ff;
-}
-
-/* Стилізація placeholder */
-input::placeholder {
-    color: #999;
-    font-style: italic;
 }
