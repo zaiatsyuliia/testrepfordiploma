@@ -1,0 +1,218 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+    color: #2c3e50;
+    line-height: 1.6;
+}
+
+.header {
+    position: relative;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    border-bottom: 1px solid rgba(52, 152, 219, 0.2);
+}
+
+.header h1 {
+    text-align: center;
+    color: #2980b9;
+    font-weight: 300;
+    font-size: 2.2em;
+}
+
+#serverStatus {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.9em;
+    font-weight: 500;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(52, 152, 219, 0.2);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.section {
+    background: rgba(255, 255, 255, 0.8);
+    margin: 20px 0;
+    padding: 25px;
+    border-radius: 10px;
+    border: 1px solid rgba(52, 152, 219, 0.2);
+}
+
+.section h2 {
+    color: #3498db;
+    margin-bottom: 15px;
+    font-weight: 400;
+    font-size: 1.4em;
+}
+
+button {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95em;
+    font-weight: 500;
+    margin: 5px;
+}
+
+button:hover {
+    background: #2980b9;
+}
+
+button:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+}
+
+input[type="file"] {
+    padding: 10px;
+}
+
+input[type="range"] {
+    width: 150px;
+    margin: 0 10px;
+}
+
+select {
+    padding: 8px 12px;
+    border: 1px solid #3498db;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.8);
+    color: #2c3e50;
+}
+
+label {
+    display: inline-block;
+    margin: 10px 15px 10px 0;
+    color: #34495e;
+    font-weight: 500;
+}
+
+img {
+    max-width: 400px;
+    border-radius: 8px;
+    margin: 10px;
+}
+
+#canvas3d {
+    position: relative;
+    border: 2px solid #3498db;
+    border-radius: 8px;
+    cursor: grab;
+}
+
+#canvas3d:active {
+    cursor: grabbing;
+}
+
+.success {
+    background: rgba(46, 204, 113, 0.1);
+    color: #27ae60;
+    border-left: 4px solid #2ecc71;
+}
+
+.error {
+    background: rgba(231, 76, 60, 0.1);
+    color: #c0392b;
+    border-left: 4px solid #e74c3c;
+}
+
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.viewer-controls {
+    margin: 15px 0;
+    text-align: center;
+}
+
+.viewer-hint {
+    font-size: 0.85em;
+    color: #7f8c8d;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.hidden {
+    display: none;
+}
+
+@media (max-width: 767px) {
+    .header h1 {
+        font-size: 1.8em;
+        margin-bottom: 10px;
+    }
+    
+    #serverStatus {
+        position: static;
+        text-align: center;
+        margin-top: 10px;
+    }
+    
+    .container {
+        padding: 10px;
+    }
+    
+    .section {
+        padding: 15px;
+    }
+    
+    img, #canvas3d {
+        max-width: 100%;
+    }
+    
+    .controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    label {
+        display: block;
+        margin: 10px 0;
+    }
+}
+
+#loading {
+    text-align: center;
+    color: #3498db;
+    font-weight: 500;
+    padding: 20px;
+}
+
+#loading::after {
+    content: '';
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #3498db;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+    margin-left: 10px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
