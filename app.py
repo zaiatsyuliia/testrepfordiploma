@@ -140,3 +140,7 @@ def process_image_only():
 
     except Exception as e:
         return jsonify({"error": f"Помилка обробки: {str(e)}"}), 500
+
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 8000))
+    app.run(host='0.0.0.0', port=port)
