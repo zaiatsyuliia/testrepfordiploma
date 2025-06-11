@@ -11,7 +11,6 @@ from create_3dmodel import ImageTo3D
 
 app = Flask(__name__)
 CORS(app)
-model_3d = ImageTo3D()
 
 def save_temp_file(file):
     """Збереження тимчасового файлу"""
@@ -50,6 +49,7 @@ def health_check():
 
 @app.route('/generate_3d', methods=['POST'])
 def generate_3d_model():
+    model_3d = ImageTo3D()
     try:
         # Перевірка файлу
         if 'image' not in request.files or request.files['image'].filename == '':
